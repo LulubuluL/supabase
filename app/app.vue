@@ -1,6 +1,7 @@
 <script setup>
-import { toast } from "#build/ui";
 import { useSupabase } from "../utils/supabase";
+
+const toast = useToast();
 
 useHead({
   meta: [{ name: "viewport", content: "width=device-width, initial-scale=1" }],
@@ -9,10 +10,6 @@ useHead({
     lang: "en",
   },
 });
-
-const supabase = useSupabase();
-const test = await supabase.auth.getUser();
-console.log(test);
 
 const title = "Nuxt Starter Template";
 const description =
@@ -28,25 +25,18 @@ useSeoMeta({
   twitterCard: "summary_large_image",
 });
 
-const user = ref(null);
+const user = useSupabaseUser();
 
-console.log(user);
+const supabase = useSupabase();
 
-onMounted(() => {
-  const supabase = useSupabase();
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    user.value = session?.user || null;
-  });
-});
+async function logout() {
+  const { error } = await supabase.auth.signOut();
 
-function logout() {
-  const supabase = useSupabase();
-  supabase.auth.signOut().then(() => {
-    user.value = null;
-  });
-  toast.add({
-    description: "Logged out successfully.",
-  });
+  if (!error) {
+    toast.add({
+      description: "Logged out successfully.",
+    });
+  }
 }
 </script>
 
@@ -74,18 +64,18 @@ function logout() {
         />
 
         <UButton
-          v-if="!user?.data"
+          v-if="!user"
           to="/login"
-          variant="outline"
-          icon="i-ui-login"
+          variant="ghost"
+          icon="i-heroicons-arrow-right-on-rectangle"
           aria-label="Login"
           color="neutral"
         />
 
         <UButton
-          v-if="user?.data"
-          variant="outline"
-          icon="i-ui-logout"
+          v-else
+          variant="ghost"
+          icon="i-heroicons-arrow-left-on-rectangle"
           aria-label="Logout"
           color="neutral"
           @click="logout"
