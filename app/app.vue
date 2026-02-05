@@ -25,13 +25,13 @@ useSeoMeta({
   twitterCard: "summary_large_image",
 });
 
-const user = useSupabaseUser();
-
 const supabase = useSupabase();
+const user = supabase.auth.getUser();
+const session = await supabase.auth.getSession();
 
 async function logout() {
   const { error } = await supabase.auth.signOut();
-
+  navigateTo("/login");
   if (!error) {
     toast.add({
       description: "Logged out successfully.",
@@ -73,7 +73,7 @@ async function logout() {
         />
 
         <UButton
-          v-else
+          v-if="user"
           variant="ghost"
           icon="i-heroicons-arrow-left-on-rectangle"
           aria-label="Logout"
